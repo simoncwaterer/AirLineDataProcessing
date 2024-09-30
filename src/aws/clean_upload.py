@@ -2,12 +2,34 @@ import logging
 import os
 import boto3
 import botocore
-
 import manage_s3
 import utilities
 import clean_data
 import transform_parquet
 import upload_data_s3
+
+
+"""
+    Parameters:
+    - parser: ArgumentParser object to parse command line arguments
+    - logger: Logging object to log events
+    - cmd_args: Parsed command line arguments
+    - dir_path: Path to directory containing data 
+    - metadata_dir: Name of subdirectory containing metadata
+    - flight_data_dir: Name of subdirectory containing flight data
+    
+    Functionality:
+    - Parses command line arguments
+    - Configures logging
+    - Validates directory structure
+    - Calls functions to clean data
+    - Transforms CSV data to Parquet
+    - Uploads CSV and Parquet data to S3
+"""
+from typing import TypeVar
+
+T = TypeVar('T')
+
 
 def main():
     parser = utilities.parse_arguments()
@@ -21,6 +43,8 @@ def main():
     except SystemExit as e:
         logging.exception("Exception whilst parsing command line arguments", e.code)
         exit(e.code)
+
+    
 
     # configure directory and sub-directory paths
     dir_path = cmd_args.dir
@@ -48,7 +72,6 @@ def main():
     # upload cdv and parquet data to s3 bucket
     upload_data_s3.upload_parquet_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_name)
     upload_data_s3.upload_csv_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_name);
-
     
 if __name__ == "__main__":
     main()

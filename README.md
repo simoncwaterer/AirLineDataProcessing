@@ -2,6 +2,8 @@
 
 ## Description
 
+This Python application cleans, transforms, and uploads airline flight data to Amazon S3 for analytics. It takes a directory of CSV files as input, cleans any invalid rows, converts the CSV data to efficient Parquet format, generates an S3 bucket, and uploads both the cleaned CSV and Parquet files to S3. The goal is to prepare raw flight data for analysis by removing invalid rows, using a compressed columnar format, and loading into cloud storage. Key steps include argument parsing, input validation, cleaning, transformation, S3 bucket creation, and file uploads. This enables downstream analytics on clean, efficient flight data stored in S3.
+
 The project processes data about airline flights. Specifically to analyse data related to flight delays. The data used is from the following site [dataverse.harvard.edu](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HG7NV7). The data used consists of the following:
 
 * flight arrival and departure details for all commercial flights within the USA, from October 1987 to April 2008. The flight data is packaged in yearly chunks. 
@@ -53,6 +55,23 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+split_flight_dash.sh
+
+This Bash script splits a large CSV file into smaller chunks while preserving the header row in each output file. It takes two arguments - the number of lines to split on, and the path to the input CSV file.
+
+clean_upload.py
+
+* Validates the input directory structure
+* Calls functions to clean the raw CSV data
+* Transforms the cleaned CSV data to Parquet format
+* Creates the S3 bucket
+* Uploads the cleaned CSV files to the S3 bucket 
+* Uploads the Parquet files to the S3 bucket
+
+In summary, it takes raw CSV flight data as input, cleans it, converts it to Parquet, generates an S3 bucket, and uploads both CSV and Parquet to S3. The main goals are cleaning data, converting to Parquet for efficiency, and loading into S3 for storage and further processing.
+
+
 
 To use this project, run:
 

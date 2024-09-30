@@ -1,5 +1,6 @@
 import logging
 import os
+from turtle import up
 import boto3
 import botocore
 import pyarrow.parquet as pq
@@ -30,19 +31,35 @@ def upload_csv_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_
 # iterate through all parquet files in the sub-directories dir_path/metadata and dir_path/flight-info
 # and upload each file to the s3 bucket
 def upload_parquet_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_name):
-    try:
-        for subdir in [metadata_dir, flight_data_dir]: 
-            subdir_path = os.path.join(dir_path, subdir)
-            for filename in os.listdir(subdir_path):
-                if filename.endswith('.csv'):
-                    csv_path = os.path.join(subdir_path, filename)
-                    parquet_path = csv_path.replace('.csv', '.parquet')
-                    table = csv.read_csv(csv_path)
-                    pq.write_table(table, parquet_path)
-                    logging.info(f'Transformed {csv_path} to {parquet_path}')
-    except Exception as e:
-        logging.exception(f"failed to open {dir_path}  {e}")
+    for subdir in [metadata_dir, flight_data_dir]: 
+        subdir_path = os.path.join(dir_path, subdir)
+        for filename in os.listdir(subdir_path):
+            if filename.endswith('.parquet'):
+                file_path = os.path.join(subdir_path, filename)
+                # get the key name for S3 object by replacing .csv with .parquet in the key name
+                key = f"{subdir}/{filename}"
+                # upload the parquet file to S3
+                manage_s3.upload_to_s3(s3_client, s3_bucket_name, file_path, key)
+                logging.info(f"Uploaded {file_path} to {s3_bucket_name}/{key}")
 
+"""
+    main() function to handle execution of the upload_data_s3 module.
+    
+    Parameters:
+        None
+    
+    Functionality:
+        - Parses command line arguments
+        - Configures logging
+        - Validates directory structure
+        - Sets up AWS client and credentials
+        - Creates S3 bucket 
+        - Calls function to upload CSV data to S3
+        - Calls function to upload Parquet data to S3
+        
+    Returns:
+        None
+"""
 def main():
     parser = utilities.parse_arguments()
 
@@ -76,7 +93,7 @@ def main():
     s3_bucket_response = manage_s3.create_bucket(s3_client, s3_bucket_name, cmd_args.region)
 
     upload_csv_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_name)
-
+    upload_parquet_s3(dir_path, metadata_dir, flight_data_dir, s3_client, s3_bucket_name)
 
 if __name__ == "__main__":
     main()
